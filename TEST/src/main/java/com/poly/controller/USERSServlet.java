@@ -22,12 +22,12 @@ import poly.entity.USERS;
               "/USERS/create", 
               "/USERS/update", 
               "/USERS/delete", 
-              "/USERS/edit" 
+              "/USERS/edit", "/USERS/reset"
+              
              })
 public class USERSServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final String VIEW_INDEX = "/index.jsp";
-    private static final String VIEW_EDIT = "/editUser.jsp"; // Edit view
+   
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -57,46 +57,63 @@ public class USERSServlet extends HttpServlet {
         }
 
         String path = req.getServletPath();
-        try {
-            if (path.equals("/USERS/edit")) {
-                String id = req.getPathInfo() != null ? req.getPathInfo().substring(1) : null;
-                if (id != null) {
-                    form = dao.selectByid(id);
-                    if (form == null) {
-                        req.setAttribute("error", "User not found.");
-                    }
+        
+        // Handle search action first
+        String action = req.getParameter("action");
+        if ("search".equals(action)) {
+            String searchId = req.getParameter("searchId");
+            try {
+                form = dao.selectByName(searchId); // Search by ID or name
+                if (form == null) {
+                    req.setAttribute("error", "User not found.");
                 } else {
-                    req.setAttribute("error", "Invalid user ID.");
+                    req.setAttribute("user", form); // Pass the user to the JSP
                 }
-            } else if (path.equals("/USERS/create")) {
-                dao.insert(form);
-                req.setAttribute("message", "User added successfully.");
-            } else if (path.equals("/USERS/update")) {
-                dao.update(form);
-                req.setAttribute("message", "User updated successfully.");
-            } else if (path.equals("/USERS/delete")) {
-                String id = req.getParameter("id");
-                if (id != null) {
-                    dao.delete(id);
-                    req.setAttribute("message", "User deleted successfully.");
-                } else {
-                    req.setAttribute("error", "Invalid user ID.");
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                req.setAttribute("error", "An error occurred during the search: " + e.getMessage());
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            req.setAttribute("error", "An error occurred during the operation: " + e.getMessage());
+        } else {
+            try {
+                if (path.equals("/USERS/edit")) {
+                    String id = req.getPathInfo() != null ? req.getPathInfo().substring(1) : null;
+                    if (id != null) {
+                        form = dao.selectByid(id);
+                        if (form == null) {
+                            req.setAttribute("error", "User not found.");
+                        }
+                    } else {
+                        req.setAttribute("error", "Invalid user ID.");
+                    }
+                } else if (path.equals("/USERS/create")) {
+                    dao.insert(form);
+                    req.setAttribute("message", "User added successfully.");
+                } else if (path.equals("/USERS/update")) {
+                    dao.update(form);
+                    req.setAttribute("message", "User updated successfully.");
+                } else if (path.equals("/USERS/delete")) {
+                    String id = req.getParameter("id");
+                    if (id != null) {
+                        dao.delete(id);
+                        req.setAttribute("message", "User deleted successfully.");
+                    } else {
+                        req.setAttribute("error", "Invalid user ID.");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                req.setAttribute("error", "An error occurred during the operation: " + e.getMessage());
+            }
         }
 
         // Reset form after create, delete, or update
-        if (path.equals("/USERS/create") || path.equals("/USERS/delete") || path.equals("/USERS/update")) {
+        if (path.equals("/USERS/create") || path.equals("/USERS/delete") || path.equals("/USERS/update") || path.equals("/USERS/reset") ) {
             form = new USERS(); // Reset the form
         }
 
-        req.setAttribute("user", form); // Pass the current user object to the JSP
-        List<USERS> list = dao.selectAll();
+        List<USERS> list = dao.selectAll(); // Fetch all users
         req.setAttribute("list", list); // Pass the list of users to the JSP
         req.getRequestDispatcher("/index.jsp").forward(req, resp); // Forward to the JSP page
     }
+
 }

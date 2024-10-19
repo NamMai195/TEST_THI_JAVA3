@@ -13,6 +13,8 @@ public class USERSDao extends Dao<USERS, String> {
 	final String DELETE_SQL = "DELETE FROM USERS WHERE Id=?";
 	final String SELECT_ALL_SQL = "SELECT * FROM USERS";
 	final String SELECT_BY_ID_SQL = "SELECT * FROM USERS WHERE Id=?";
+	final String SELECT_BY_FULLNAME = "SELECT * FROM USERS WHERE Fullname LIKE ?";
+
 
 	@Override
 	public void insert(USERS entity) {
@@ -59,6 +61,12 @@ public class USERSDao extends Dao<USERS, String> {
 			throw new RuntimeException("Database error: " + e.getMessage(), e);
 		}
 		return list;
+	}
+
+	public USERS selectByName(String name) {
+		List<USERS> list = selectBySql(SELECT_BY_FULLNAME, "%" + name + "%");
+
+		return list.isEmpty() ? null : list.get(0);
 	}
 
 }

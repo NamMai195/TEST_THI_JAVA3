@@ -17,9 +17,11 @@
 			<h2>User Management - CRUD</h2>
 			<p>Fill in the data below.</p>
 			<form id="actionForm" method="post">
+				<!-- Ensure it's POST for CRUD actions -->
 				<div class="input-group">
 					<label for="userId">UserID</label> <input type="text" id="userId"
-						name="id" placeholder="UserID" value="${user.id}">
+						name="id" placeholder="UserID" value="${user.id}" >
+					<!-- Set readonly for UserID during update -->
 				</div>
 				<div class="input-group">
 					<label for="password">Password</label> <input type="password"
@@ -44,7 +46,6 @@
 					<label for="user">User</label>
 				</div>
 
-
 				<div class="text-center">
 					<button type="button" onclick="submitForm('USERS/create')"
 						class="user-form-button">Thêm</button>
@@ -56,6 +57,17 @@
 						class="user-form-button">Làm mới</button>
 				</div>
 			</form>
+
+			<!-- Search form -->
+			<div class="search-container">
+				<form action="${pageContext.request.contextPath}/USERS/QLNguoiDung"
+					method="get">
+					<input type="hidden" name="action" value="search"> <input
+						type="text" name="searchId" class="form-control"
+						placeholder="Nhập ID người dùng" required>
+					<button type="submit" class="btn btn-secondary">Tìm</button>
+				</form>
+			</div>
 		</div>
 
 		<!-- Table displaying the list of users -->
@@ -73,17 +85,18 @@
 			</thead>
 			<tbody>
 				<!-- Lặp qua danh sách người dùng -->
-				<c:forEach var="user" items="${list}">
+				<c:forEach var="userItem" items="${list}" varStatus="status">
 					<tr
-						onclick="selectUser('${user.id}', '${user.password}', '${user.fullname}', '${user.email}', '${user.admin}')">
-						<td>${user.id}</td>
-						<td>${user.id}</td>
-						<td>${user.password}</td>
-						<td>${user.fullname}</td>
-						<td>${user.email}</td>
-						<td>${user.admin ? 'Admin' : 'User'}</td>
+						onclick="selectUser('${userItem.id}', '${userItem.password}', '${userItem.fullname}', '${userItem.email}', '${userItem.admin}')">
+						<td>${status.index + 1}</td>
+						<!-- Use index for No -->
+						<td>${userItem.id}</td>
+						<td>${userItem.password}</td>
+						<td>${userItem.fullname}</td>
+						<td>${userItem.email}</td>
+						<td>${userItem.admin ? 'Admin' : 'User'}</td>
 						<td><a href="javascript:void(0)"
-							onclick="selectUser('${user.id}', '${user.password}', '${user.fullname}', '${user.email}', '${user.admin}')">Edit</a></td>
+							onclick="selectUser('${userItem.id}', '${userItem.password}', '${userItem.fullname}', '${userItem.email}', '${userItem.admin}')">Edit</a></td>
 					</tr>
 				</c:forEach>
 			</tbody>
@@ -101,7 +114,7 @@
 			// Cập nhật vai trò
 			const adminRadio = document.getElementById('admin');
 			const userRadio = document.getElementById('user');
-			if (role === 'true' || role === true) {
+			if (admin === 'true' || admin === true) {
 				adminRadio.checked = true;
 			} else {
 				userRadio.checked = true;
@@ -110,6 +123,17 @@
 
 		// Reset the form fields
 		function resetForm() {
+			// Reset toàn bộ các trường nhập liệu
+			document.getElementById('userId').value = '';
+			document.getElementById('password').value = '';
+			document.getElementById('fullname').value = '';
+			document.getElementById('email').value = '';
+
+			// Đặt lại trạng thái cho radio buttons (không chọn admin hoặc user)
+			document.getElementById('admin').checked = false;
+			document.getElementById('user').checked = false;
+
+			// Đặt lại form về trạng thái mặc định
 			document.getElementById("actionForm").reset();
 		}
 
